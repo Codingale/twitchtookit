@@ -21,7 +21,7 @@ namespace TwitchToolkitDev
         public WebRequest request;
         public WebResponse response;
         public Stream responseStream;
-        public Func<bool> Callback;
+        public Func<RequestState, bool> Callback;
         public string jsonString;
 
         public RequestState()
@@ -38,11 +38,10 @@ namespace TwitchToolkitDev
     {
         public static ManualResetEvent allDone = new ManualResetEvent(false);
         const int BUFFER_SIZE = 1024;
-        public static void Main(string requesturl, Func<bool> func = null)
+        public static void Main(string requesturl, Func<RequestState, bool> func = null)
         {
             try
             {
-                Helper.Log("If this is the last message in the log check Viewer.WebRequest_BeginGetResposne");
                 ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
                 WebRequest myWebRequest = WebRequest.Create(requesturl);
                 RequestState myRequestState = new RequestState();
@@ -112,12 +111,11 @@ namespace TwitchToolkitDev
                     {
                         string stringContent;
                         stringContent = myRequestState.requestData.ToString();
-                        Helper.Log(stringContent);
                         myRequestState.jsonString = stringContent;
                         
                         if (myRequestState.Callback != null)
                         {
-                            myRequestState.Callback();
+                            myRequestState.Callback(myRequestState);
                         }
 
                     }

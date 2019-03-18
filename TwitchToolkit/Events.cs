@@ -246,8 +246,11 @@ namespace TwitchToolkit
       new Event(83,  EventType.Neutral, EventCategory.Foreigner, 1, "Traveler",          () => Helper.TravelerPossible(), (quote) => Helper.Traveler(quote)),
       new Event(84,  EventType.Neutral, EventCategory.Foreigner, 1, "Visitor",           () => Helper.VisitorPossible(), (quote) => Helper.Visitor(quote)),
       new Event(85,  EventType.Neutral, EventCategory.Foreigner, 2, "Trader visiting",   () => Helper.TraderPossible(), (quote) => Helper.Trader(quote)),
-      new Event(86,  EventType.Neutral, EventCategory.Foreigner, 2, "Trader ship",       () => Helper.TraderShipPossible(), (quote) => Helper.TraderShip(quote))
+      new Event(86,  EventType.Neutral, EventCategory.Foreigner, 2, "Trader ship",       () => Helper.TraderShipPossible(), (quote) => Helper.TraderShip(quote)),
       #endregion
+      new Event(87,  EventType.Good, EventCategory.Foreigner, 2, "Military aid",       () => true, (quote) => Helper.MilitaryAid(quote)),
+      new Event(88,  EventType.Good,    EventCategory.Drop, 2, "Cargo Pod Frenzy",        () => Helper.CargoPodPossible(), (quote) => Helper.CargoPodFrenzy(quote)),
+      new Event(90,  EventType.Neutral, EventCategory.Environment, 4, "Big meteorite shower",() => true, (quote) => Helper.MeteoriteShower(quote, 25, true)),
     };
 
         public static Event[] GetEvents()
@@ -293,21 +296,20 @@ namespace TwitchToolkit
                 q += "\n\n";
             }
 
-            if (("TwitchStoriesQuote" + id).TryTranslate(out s))
+
+            q += "<b><i><color=#00ffffff>";
+
+            if (chatmsg == null)
             {
-                q += "<b><i><color=#00ffffff>";
-
-                if (chatmsg == null)
-                {
-                    q += s;
-                }
-                else
-                {
-                    q += chatmsg;
-                }
-
-                q += "</color></i></b>";
+                q += s;
             }
+            else
+            {
+                q += chatmsg;
+            }
+
+            q += "</color></i></b>";
+
 
             return q;
         }

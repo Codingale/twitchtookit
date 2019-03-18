@@ -115,7 +115,15 @@ namespace TwitchToolkit
                 {
                     Helper.Log("VoteEvent Detected, Queueing");
                     var next = VoteEvents.Dequeue();
-                    _mod.StartVote(next);
+                    if (next.options != null && next.options.Count() > 1)
+                    {
+                        _mod.StartVote(next);
+                    }
+                    else
+                    {
+                        Helper.Log("VoteEvent options were empty....");
+                    }
+
                 }
 
                 if (Events.Count() > 0)
@@ -127,10 +135,10 @@ namespace TwitchToolkit
                 {
                     _lastCoinReward = time;
                 }
-                else if (Settings.EarningCoins && ((time - _lastCoinReward) >= Settings.CoinInterval) && WebRequest_BeginGetResponse.jsonString != null)
+                else if (Settings.EarningCoins && ((time - _lastCoinReward) >= Settings.CoinInterval) && Settings.viewers.jsonallviewers != null)
                 {
                     _lastCoinReward = time;
-                    Viewer.AwardViewersCoins();
+                    Settings.viewers.AwardViewersCoins();
                 }
                 if (_lastMinute < 0)
                 {
@@ -139,7 +147,8 @@ namespace TwitchToolkit
                 else if (_lastMinute < time)
                 {
                     _lastMinute = time;
-                    WebRequest_BeginGetResponse.Main();
+                    Settings.JobManager.CheckAllJobs();
+                    TwitchToolkitDev.WebRequest_BeginGetResponse.Main("https://tmi.twitch.tv/group/user/" + Settings.Channel.ToLower() + "/chatters", new Func<TwitchToolkitDev.RequestState, bool>(Settings.viewers.SaveUsernamesFromJsonResponse));
                     _mod.WriteSettings();
                 }
                 //Helper.Log($"last minute: {_lastMinute}, chatter exists: {WebRequest_BeginGetResponse.jsonString != null}, last coin reward:  {_lastCoinReward}, minute: {minutes}, Time: {time}");

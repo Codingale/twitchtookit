@@ -5,6 +5,7 @@ using UnityEngine;
 using RimWorld;
 using Verse;
 using TSIncidents = TwitchToolkit.Incidents;
+using System.Text;
 
 namespace TwitchToolkit
 {
@@ -12,7 +13,6 @@ namespace TwitchToolkit
     {
         private static bool _infestationPossible = false;
         static System.Random _random = new System.Random();
-        private static string paste;
 
         public static void Reset()
         {
@@ -31,7 +31,14 @@ namespace TwitchToolkit
           string animal = null,
           string from = null,
           string to = null,
-          string amount = null)
+          string amount = null,
+          string mod = null,
+          string viewer = null,
+          string newbalance = null,
+          string karma = null,
+          string first = null,
+          string second = null,
+          string third = null)
         {
             quote = quote.Replace("{colonist}", colonist ?? "");
             quote = quote.Replace("{colonists}", colonists ?? "");
@@ -44,6 +51,13 @@ namespace TwitchToolkit
             quote = quote.Replace("{from}", from ?? "");
             quote = quote.Replace("{to}", to ?? "");
             quote = quote.Replace("{amount}", amount ?? "");
+            quote = quote.Replace("{mod}", mod ?? "");
+            quote = quote.Replace("{viewer}", viewer ?? "");
+            quote = quote.Replace("{newbalance}", newbalance ?? "");
+            quote = quote.Replace("{karma}", karma ?? "");
+            quote = quote.Replace("{first}", first ?? "");
+            quote = quote.Replace("{second}", second ?? "");
+            quote = quote.Replace("{third}", third ?? "");
             return quote;
         }
 
@@ -154,7 +168,7 @@ namespace TwitchToolkit
                 message = "";
             }
 
-            Current.Game.letterStack.ReceiveLetter("TwitchStoriesCarePackage".Translate(), message, type, new TargetInfo(vec, Helper.AnyPlayerMap, false));
+            Current.Game.letterStack.ReceiveLetter("TwitchToolkitCarePackage".Translate(), message, type, new TargetInfo(vec, Helper.AnyPlayerMap, false));
         }
         /*
         public static void Mushroom(string gender)
@@ -793,6 +807,32 @@ namespace TwitchToolkit
             });
         }
 
+        public static void MilitaryAid(string quote)
+        {
+            var incident = new TSIncidents.IncidentWorker_CallForAid(quote);
+            
+            FactionManager manager = Find.FactionManager;
+
+            Faction ofPlayer = Faction.OfPlayer;
+            
+            Faction tryAlly = manager.RandomAlliedFaction(false, false, true, TechLevel.Industrial);
+
+            if (tryAlly == null)
+            {
+                (from x in manager.AllFactions
+                where !x.IsPlayer && (false || !x.def.hidden) && (false || !x.defeated) && (true || x.def.humanlikeFaction) && (x.def.techLevel >= TechLevel.Industrial) && x.PlayerRelationKind == FactionRelationKind.Neutral
+                select x).TryRandomElement(out tryAlly);
+            }
+            
+			IncidentParms incidentParms = new IncidentParms();
+			incidentParms.target = Helper.AnyPlayerMap;
+			incidentParms.faction = tryAlly;
+			incidentParms.raidArrivalModeForQuickMilitaryAid = true;
+			incidentParms.points = DiplomacyTuning.RequestedMilitaryAidPointsRange.RandomInRange;
+			tryAlly.lastMilitaryAidRequestTick = Find.TickManager.TicksGame;
+            incident.TryExecute(incidentParms);
+        }
+
         public static bool CargoPodPossible()
         {
             var incident = new TSIncidents.IncidentWorker_ResourcePodCrash(null);
@@ -806,6 +846,16 @@ namespace TwitchToolkit
         public static void CargoPod(string quote)
         {
             var incident = new TSIncidents.IncidentWorker_ResourcePodCrash(quote);
+            incident.def = IncidentDefOf.ShipChunkDrop;
+            incident.TryExecute(new IncidentParms
+            {
+                target = Helper.AnyPlayerMap
+            });
+        }
+
+        public static void CargoPodFrenzy(string quote)
+        {
+            var incident = new TSIncidents.IncidentWorker_ResourcePodFrenzy(quote);
             incident.def = IncidentDefOf.ShipChunkDrop;
             incident.TryExecute(new IncidentParms
             {
@@ -1650,194 +1700,6 @@ namespace TwitchToolkit
             }
         }
 
-        public static void CargoDropItem(string quote, int amount, string item)
-        {
-            Helper.Log("Attemping to make item " + item);
-            try
-            {
-                var itemDef = ThingDef.Named("DropPodIncoming");
-                var itemThing = new Thing();
-                switch (item)
-                {
-                    case "silver":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Silver, null);
-                        break;
-                    case "uranium":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Uranium, null);
-                        break;
-                    case "survivalmeal":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MealSurvivalPack, null);
-                        break;
-                    case "pastemeal":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MealNutrientPaste, null);
-                        break;
-                    case "simplemeal":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MealSimple, null);
-                        break;
-                    case "finemeal":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MealFine, null);
-                        break;
-                    case "kibble":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Kibble, null);
-                        break;
-                    case "hay":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Hay, null);
-                        break;
-                    case "humanmeat":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Meat_Human, null);
-                        break;
-                    case "luciferium":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Luciferium, null);
-                        break;
-                    case "pemmican":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Pemmican, null);
-                        break;
-                    case "techprofsubpersonacore":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.TechprofSubpersonaCore, null);
-                        break;
-                    case "wort":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Wort, null);
-                        break;
-                    case "gold":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Gold, null);
-                        break;
-                    case "steel":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Steel, null);
-                        break;
-                    case "wood":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.WoodLog, null);
-                        break;
-                    case "herbalmedicine":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MedicineHerbal, null);
-                        break;
-                    case "industrialmedicine":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MedicineIndustrial, null);
-                        break;
-                    case "glitterworldmedicine":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.MedicineUltratech, null);
-                        break;
-                    case "graniteblocks":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.BlocksGranite, null);
-                        break;
-                    case "plasteel":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Plasteel, null);
-                        break;
-                    case "beer":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Beer, null);
-                        break;
-                    case "aipersonacore":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.AIPersonaCore, null);
-                        break;
-                    case "smokeleafjoint":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.SmokeleafJoint, null);
-                        break;
-                    case "industrialcomponent":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.ComponentIndustrial, null);
-                        break;
-                    case "advcomponent":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.ComponentSpacer, null);
-                        break;
-                    case "insectjelly":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.InsectJelly, null);
-                        break;
-                    case "cloth":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Cloth, null);
-                        break;
-                    case "plainleather":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Leather_Plain, null);
-                        break;
-                    case "hyperweave":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Hyperweave, null);
-                        break;
-                    case "chocolate":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Chocolate, null);
-                        break;
-                    case "elephanttusk":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.ElephantTusk, null);
-                        break;
-                    case "potatoes":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.RawPotatoes, null);
-                        break;
-                    case "berries":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.RawBerries, null);
-                        break;
-                    case "heart":
-                        itemThing = ThingMaker.MakeThing(ThingDefOf.Heart, null);
-                        break;
-
-                    // weapons
-                    case "chargerifle":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Gun_ChargeRifle"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "revolver":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Gun_Revolver"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "boltactionrifle":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Gun_BoltActionRifle"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "chainshotgun":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Gun_ChainShotgun"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "doomsdaylauncher":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Gun_DoomsdayRocket"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-
-                    // apparel
-                    case "advancedhelmet":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_AdvancedHelmet"), ThingDefOf.Steel);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "marinehelmet":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_PowerArmorHelmet"), null);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "duster":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_Duster"), ThingDefOf.Cloth);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "tribalwear":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_TribalA"), ThingDefOf.Cloth);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "tshirt":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_BasicShirt"), ThingDefOf.Cloth);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "pants":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_Pants"), ThingDefOf.Cloth);
-                        setItemQualityRandom(itemThing);
-                        break;
-                    case "cowboyhat":
-                        itemThing = ThingMaker.MakeThing(ThingDef.Named("Apparel_CowboyHat"), ThingDefOf.Cloth);
-                        setItemQualityRandom(itemThing);
-                        break;
-                }
-                int stackLimit = itemThing.def.stackLimit;
-                itemThing.stackCount = amount;
-                itemThing.HitPoints = itemThing.MaxHitPoints;
-                IntVec3 vec = Rain(itemDef, itemThing);
-
-                CarePackage(quote, LetterDefOf.PositiveEvent, vec);
-            }
-            catch (InvalidCastException e)
-            {
-                Helper.Log("Failed to make item " + e.Message);
-            }
-        }
-
-        public static void setItemQualityRandom(Thing thing)
-        {
-            QualityCategory qual = QualityUtility.GenerateQualityTraderItem();
-            thing.TryGetComp<CompQuality>().SetQuality(qual, ArtGenerationContext.Outsider);
-        }
-
-
-
         #region Needs testing
         public static void ForeverAlone()
         {
@@ -1884,7 +1746,7 @@ namespace TwitchToolkit
                 string type = "malformed type";
                 if (Enum.IsDefined(typeof(KarmaType), product.karmatype))
                 {
-                    type = product.type.ToString();
+                    type = product.karmatype.ToString();
                 }
                 
                 if (product.amount > 0)
@@ -1906,7 +1768,24 @@ namespace TwitchToolkit
                     currentline++;
                 }
             }
-            System.IO.File.WriteAllLines(@"" + Application.persistentDataPath + "/productlist.csv", lines);
+            System.IO.File.WriteAllLines(@"" + Application.persistentDataPath + "/productlist.csv", lines, LanguageEncoding());
+        }
+
+
+        public static Encoding LanguageEncoding()
+        {
+            string lang = Prefs.LangFolderName.ToLower();
+            Encoding encoding;
+            switch(lang)
+            {
+                case "deutsch":
+                    encoding = System.Text.Encoding.GetEncoding(850);
+                    break;
+                default:
+                    encoding = Encoding.UTF8;
+                    break;
+            }
+            return encoding;
         }
     }
 }

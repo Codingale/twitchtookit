@@ -39,6 +39,9 @@
   <TwitchStoriesDescription74>Alle sind plötzlich rasend vor Wut.
 
 Jeder wird jeden angreifen, den er sieht.</TwitchStoriesDescription74>
-  <TwitchStoriesDescription80>Die Rimworld-Götter sehen immernoch etwas Hoffnung für deine Kolonie. Sie haben dir Gold geschickt, um etwas schönes zu bauen. Nutz es!</TwitchStoriesDescription80>
+  <TwitchStoriesDescription80>{from} beschloss, dir ein Pflegepaket mit zu schicken {amount} {item}! Danke, {from}!</TwitchStoriesDescription80>
+  <TwitchStoriesDescription87>Militärhilfe von einer anderen Fraktion ist erschienen.</TwitchStoriesDescription87>
+  <TwitchStoriesDescription88>Ein Handelsschiff ist durcheinander geraten und hat angefangen, mehrere Ressourcen an meinen Stützpunkt zu schicken.</TwitchStoriesDescription88>
   <TwitchStoriesDescription89>{colonist} hat einen plötzlichen Drang nach etwas menschlichem Fleisch.</TwitchStoriesDescription89>
+  <TwitchStoriesDescription90>Ein großer Meteoritenschauer ist in das Gebiet eingedrungen, es wäre ratsam, Deckung zu suchen.</TwitchStoriesDescription90>
 </LanguageData>

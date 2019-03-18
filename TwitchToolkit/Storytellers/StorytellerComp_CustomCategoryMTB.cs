@@ -21,11 +21,11 @@ namespace TwitchToolkit
         {
             float mtbNow = this.Props.mtbDays;
             IEnumerable<IncidentDef> options;
+            List<IncidentDef> pickedoptions = new List<IncidentDef>();
             if (this.Props.mtbDaysFactorByDaysPassedCurve != null)
             {
                 mtbNow *= this.Props.mtbDaysFactorByDaysPassedCurve.Evaluate(GenDate.DaysPassedFloat);
             }
-            Helper.Log("Trying MTB Events");
             if (Rand.MTBEventOccurs(mtbNow, 60000f, 1000f))
             {
 
@@ -34,9 +34,21 @@ namespace TwitchToolkit
                 Helper.Log("Trying to create events");
                 if (options.TryRandomElementByWeight(new Func<IncidentDef, float>(base.IncidentChanceFinal), out selectedDef))
                 {
-                    if (options.Count() > 1)
+                    if (options.Count() > Settings.VoteOptions)
                     {
-                        VoteEvent evt = new VoteEvent(options, this, this.GenerateParms(selectedDef.category, target));
+                        options = options.Where(k => k != selectedDef);
+                        pickedoptions.Add(selectedDef);
+                        for (int x = 0; x < (Settings.VoteOptions > options.Count() ? options.Count() - 1 : Settings.VoteOptions - 1); x++)
+                        {
+                            options.TryRandomElementByWeight(new Func<IncidentDef, float>(base.IncidentChanceFinal), out IncidentDef picked);
+                            if (picked != null)
+                            {
+                                options = options.Where(k => k != picked);
+                                pickedoptions.Add(picked);
+                            }
+                        }
+
+                        VoteEvent evt = new VoteEvent(pickedoptions, this, this.GenerateParms(selectedDef.category, target));
                         Ticker.VoteEvents.Enqueue(evt);
                         Helper.Log("Events created");
                         yield break;
