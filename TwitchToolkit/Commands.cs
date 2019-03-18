@@ -3,9 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Verse;
+using System.Speech.Synthesis;
 
 namespace TwitchToolkit
 {
+    public static class TTSHelper
+    {
+        public static SpeechSynthesizer Speech = new SpeechSynthesizer()
+        {
+            Volume = 100,
+            Rate = 0
+        };
+    }
     public class Commands
     {
         public int resetWarning;
@@ -330,6 +339,10 @@ namespace TwitchToolkit
                     else if (command.successmessage != null && Settings.PurchaseConfirmations)
                     {
                         _mod._client.SendMessage(command.successmessage);
+
+                        //TTS BuyeventCmd
+                        Helper.Log($"Attempting to say {message}");
+                        TTSHelper.Speech.SpeakAsync(message);
                     }
                 }
 
@@ -356,7 +369,11 @@ namespace TwitchToolkit
                     else if (command2.successmessage != null && Settings.PurchaseConfirmations)
                     {
                         _mod._client.SendMessage(command2.successmessage);
-                    }
+
+                        //TTS BuyItemCMD
+                        Helper.Log($"Attempting to say {message}");
+                        TTSHelper.Speech.SpeakAsync(message);
+    }
                 }
 
             }
